@@ -1,196 +1,399 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>USDT to Fiat Exchanger</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>USDT Seller Mini App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bybit-bg: #101010;
+            --bybit-secondary-bg: #181A20;
+            --bybit-border: #252830;
+            --bybit-text: #EAECEF;
+            --bybit-text-secondary: #8A919E;
+            --bybit-accent: #F7A600;
+        }
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Josefin Sans', sans-serif;
-      background-color: #0f0f12;
-      color: #eaeaea;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--bybit-text);
+            background-color: var(--bybit-bg);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .chat-window::-webkit-scrollbar { width: 4px; }
+        .chat-window::-webkit-scrollbar-track { background: transparent; }
+        .chat-window::-webkit-scrollbar-thumb { background: var(--bybit-border); border-radius: 2px; }
+        
+        .chat-bubble {
+            max-width: 85%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .action-button {
+            transition: all 0.2s ease;
+            background-color: var(--bybit-accent);
+            color: var(--bybit-bg);
+            font-weight: 600;
+        }
+        .action-button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+        
+        .bot-bubble {
+             background-color: var(--bybit-secondary-bg);
+        }
 
-    .container {
-      background: #1a1a1d;
-      border: 1px solid #2c2c30;
-      border-radius: 16px;
-      padding: 25px 20px;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-    }
+        .user-bubble {
+            background: linear-gradient(90deg, #3390ec, #2d70b8);
+            color: #ffffff;
+        }
 
-    h1 {
-      font-size: 1.7rem;
-      color: #fff;
-      margin-bottom: 10px;
-    }
-
-    p {
-      color: #ccc;
-      margin-bottom: 20px;
-      font-size: 0.95rem;
-    }
-
-    .menu button {
-      width: 100%;
-      background-color: #f0b90b;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      margin: 6px 0;
-      font-size: 1rem;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .menu button:hover {
-      background-color: #ffcd3d;
-    }
-
-    .warning {
-      color: #ffcc00;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-
-    .disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .section {
-      display: none;
-    }
-
-    .back {
-      background-color: #2c2c30;
-      color: #fff;
-      margin-top: 10px;
-    }
-
-    .faq {
-      text-align: left;
-      margin-top: 15px;
-      color: #ccc;
-    }
-
-    .faq h3 {
-      color: #fff;
-      font-size: 1.1rem;
-      margin-top: 12px;
-    }
-  </style>
+        .input-area {
+            background-color: var(--bybit-secondary-bg);
+            border-top: 1px solid var(--bybit-border);
+        }
+        .text-input {
+            background-color: var(--bybit-bg);
+            border: 1px solid var(--bybit-border);
+            color: var(--bybit-text);
+        }
+        .text-input::placeholder {
+            color: var(--bybit-text-secondary);
+        }
+        .text-input:focus {
+            outline: none;
+            border-color: var(--bybit-accent);
+            box-shadow: 0 0 0 2px rgba(247, 166, 0, 0.2);
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>USDT to Fiat Exchanger</h1>
-    <p>Platform rasmi untuk menukar USDT ke MYR / Skrill / Neteller secara selamat.</p>
+<body class="flex items-center justify-center h-screen">
+    <div class="w-full h-full flex flex-col bg-bybit-bg">
+        <!-- Header -->
+        <div class="p-3 text-center border-b border-bybit-border">
+            <h1 class="text-base font-semibold text-bybit-text">USDT Exchange</h1>
+        </div>
+        
+        <!-- Chat Window -->
+        <div id="chat-window" class="flex-1 p-3 space-y-3 overflow-y-auto">
+            <!-- Messages will be appended here -->
+        </div>
 
-    <div id="main-menu" class="menu">
-      <button onclick="showSection('deposit')">💰 Deposit</button>
-      <button onclick="showSection('withdraw')">💸 Withdraw</button>
-      <button onclick="showSection('rate')">📈 Live Rate</button>
-      <button onclick="showSection('faq')">❓ FAQ / Bantuan</button>
+        <!-- Input Area -->
+        <div id="input-area" class="p-3 input-area">
+            <!-- Buttons and input fields will appear here -->
+        </div>
     </div>
 
-    <!-- Deposit Section -->
-    <div id="deposit" class="section">
-      <h2>Deposit</h2>
-      <p>Pilih kaedah deposit:</p>
-      <button onclick="selectDeposit('USDT')">USDT (TRC20)</button>
-      <button onclick="selectDeposit('Skrill')">Skrill</button>
-      <button onclick="selectDeposit('Neteller')">Neteller</button>
-      <button class="back" onclick="goBack()">⬅️ Kembali</button>
-    </div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); 
+        tg.setHeaderColor('#101010');
+        tg.setBackgroundColor('#101010');
 
-    <!-- Withdraw Section -->
-    <div id="withdraw" class="section">
-      <h2>Withdraw</h2>
-      <p>Sila masukkan jumlah dan alamat penerimaan melalui bot Telegram.</p>
-      <button onclick="openBot()">🔗 Buka Bot untuk Withdraw</button>
-      <button class="back" onclick="goBack()">⬅️ Kembali</button>
-    </div>
 
-    <!-- Live Rate Section -->
-    <div id="rate" class="section">
-      <h2>Live Rate</h2>
-      <p>💵 1 USDT ≈ <b>RM4.70</b> (kadar semasa contoh)</p>
-      <button class="back" onclick="goBack()">⬅️ Kembali</button>
-    </div>
+        const chatWindow = document.getElementById('chat-window');
+        const inputArea = document.getElementById('input-area');
 
-    <!-- FAQ Section -->
-    <div id="faq" class="section faq">
-      <h2>FAQ / Bantuan</h2>
-      <h3>⚡ Minimum & Maksimum Deposit</h3>
-      <p>Min: 25 | Maks: 50,000 (USDT / MYR / Skrill / Neteller)</p>
+        // --- CONSTANTS AND CONFIGURATION ---
+        const MIN_USDT = 25;
+        const MAX_USDT = 50000;
+        const SUPPORT_CONTACT = '@YourSupportUsername';
 
-      <h3>💱 Bagaimana proses tukaran berlaku?</h3>
-      <p>Setelah deposit dibuat, admin akan semak dan tukar ke akaun pilihan anda secara manual.</p>
+        const RATES = {
+            USDT_TO_USD: 1 / 1.08,
+            USD_TO_EUR: 0.89,
+            USDT_TO_GBP: 0.77,
+        };
 
-      <h3>⏱️ Berapa lama proses?</h3>
-      <p>Biasanya 5 - 15 minit selepas pembayaran disahkan.</p>
+        let userState = {};
+        
+        // --- Haptic Feedback Helper ---
+        const triggerHaptic = (style = 'light') => {
+            try {
+                tg.HapticFeedback.impactOccurred(style);
+            } catch (e) {
+                console.warn("Haptic feedback is not available.");
+            }
+        };
 
-      <h3>❌ Nak batalkan transaksi?</h3>
-      <p>Boleh buat permintaan refund melalui bot Telegram.</p>
+        // --- HELPER FUNCTIONS ---
+        const scrollToBottom = () => {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
 
-      <button class="back" onclick="goBack()">⬅️ Kembali</button>
-    </div>
+        const addBotMessage = (htmlContent, buttons = []) => {
+            const botMessage = `
+                <div class="flex justify-start chat-bubble">
+                    <div class="bot-bubble rounded-lg p-2.5">
+                        <div class="text-sm text-bybit-text">${htmlContent}</div>
+                    </div>
+                </div>
+            `;
+            chatWindow.insertAdjacentHTML('beforeend', botMessage);
+            renderButtons(buttons);
+            scrollToBottom();
+        };
 
-    <!-- Outside Telegram Warning -->
-    <div id="outside-content" style="display:none;">
-      <p class="warning">⚠️ Sila buka dalam aplikasi Telegram untuk menggunakan Mini App ini.</p>
-      <button class="disabled" disabled>Hantar ke Bot</button>
-    </div>
-  </div>
+        const addUserMessage = (text) => {
+            const userMessage = `
+                <div class="flex justify-end chat-bubble">
+                    <div class="user-bubble rounded-lg p-2.5">
+                        <p class="text-sm">${text}</p>
+                    </div>
+                </div>
+            `;
+            chatWindow.insertAdjacentHTML('beforeend', userMessage);
+            scrollToBottom();
+        };
+        
+        const renderButtons = (buttons) => {
+            inputArea.innerHTML = '';
+            if (buttons.length > 0) {
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'grid grid-cols-2 gap-2';
+                buttons.forEach(btn => {
+                    const button = document.createElement('button');
+                    button.textContent = btn.text;
+                    button.className = 'rounded-md p-3 text-sm action-button';
+                    button.onclick = () => {
+                        triggerHaptic();
+                        btn.handler();
+                    };
+                    buttonContainer.appendChild(button);
+                });
+                inputArea.appendChild(buttonContainer);
+            }
+        };
 
-  <script>
-    const tg = window.Telegram.WebApp;
+        const renderInput = (placeholder, buttonText, handler, inputType = 'text') => {
+             inputArea.innerHTML = `
+                <div class="flex gap-2">
+                    <input id="text-input" type="${inputType}" placeholder="${placeholder}" class="flex-1 text-input rounded-md p-3 text-sm">
+                    <button id="send-button" class="action-button rounded-md px-5 text-sm">${buttonText}</button>
+                </div>
+            `;
+            const inputField = document.getElementById('text-input');
+            const sendButton = document.getElementById('send-button');
 
-    // Semak jika dalam Telegram
-    if (!(tg.initDataUnsafe && tg.initDataUnsafe.user)) {
-      document.querySelector(".menu").style.display = "none";
-      document.getElementById("outside-content").style.display = "block";
-    } else {
-      tg.expand();
-    }
+            const submitHandler = () => {
+                if (inputField.value) {
+                    triggerHaptic();
+                    handler(inputField.value);
+                }
+            };
+            
+            sendButton.onclick = submitHandler;
+            inputField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    submitHandler();
+                }
+            });
+            inputField.focus();
+        };
+        
+        const calculateFiat = (usdtAmount, fiatCurrency) => {
+            if (fiatCurrency === 'USD') return usdtAmount * RATES.USDT_TO_USD;
+            if (fiatCurrency === 'EUR') return (usdtAmount * RATES.USDT_TO_USD) * RATES.USD_TO_EUR;
+            if (fiatCurrency === 'GBP') return usdtAmount * RATES.USDT_TO_GBP;
+            return 0;
+        };
 
-    // Navigasi menu
-    function showSection(id) {
-      document.querySelector(".menu").style.display = "none";
-      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-      document.getElementById(id).style.display = "block";
-    }
+        // --- CONVERSATION FLOW ---
+        const start = () => {
+            chatWindow.innerHTML = '';
+            userState = {};
+            const userName = tg.initDataUnsafe?.user?.first_name || 'Voyager';
+            
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: 'Asia/Kuala_Lumpur', hour12: false };
+            const formattedDate = new Intl.DateTimeFormat('en-GB', options).format(now);
 
-    function goBack() {
-      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-      document.querySelector(".menu").style.display = "block";
-    }
+            const welcomeHtml = `✨ Hello, <strong>${userName}</strong>! Welcome.<br><br>` +
+            `Seamlessly convert your USDT into fiat.<br><br>` +
+            `<strong class="text-xs text-bybit-text-secondary">${formattedDate} (MYT)</strong>`;
+            
+            addBotMessage(welcomeHtml, [
+                { text: '🚀 Sell USDT', handler: selectCurrency },
+                { text: '❓ FAQ / Help', handler: showHelp }
+            ]);
+        };
+        
+        const showHelp = () => {
+             addUserMessage("FAQ / Help");
+             const helpHtml = `
+                <strong>How to Use (FAQ)</strong><br><br>
+                <strong>1. Start:</strong> Tap 'Sell USDT' & choose your currency.<br><br>
+                <strong>2. Network:</strong> Pick the correct network (e.g., TRC20). ⚠️ Using the wrong one will lose funds.<br><br>
+                <strong>3. Details:</strong> Enter sell amount & payout info.<br><br>
+                <strong>4. Deposit:</strong> Scan QR or copy address to send the exact USDT amount.<br><br>
+                <strong>Support:</strong> ${SUPPORT_CONTACT}.
+            `;
+            addBotMessage(helpHtml, [
+                { text: '⬅️ Back', handler: start }
+            ]);
+        };
 
-    // Buka bot telegram
-    function openBot() {
-      window.location.href = "https://t.me/YOUR_BOT_USERNAME";
-    }
+        const selectCurrency = () => {
+            addUserMessage("Sell USDT");
+            const ratesHtml = `<strong>Current Rates:</strong><br>`+
+                `- 1 USDT ≈ ${RATES.USDT_TO_USD.toFixed(3)} USD<br>`+
+                `- 1 USDT ≈ ${(RATES.USDT_TO_USD * RATES.USD_TO_EUR).toFixed(3)} EUR<br>`+
+                `- 1 USDT ≈ ${RATES.USDT_TO_GBP.toFixed(3)} GBP<br><br>`+
+                `Select receiving currency:`;
+            
+            addBotMessage(ratesHtml, [
+                { text: '🇺🇸 USD', handler: () => selectNetwork('USD') },
+                { text: '🇪🇺 EUR', handler: () => selectNetwork('EUR') },
+                { text: '🇬🇧 GBP', handler: () => selectNetwork('GBP') }
+            ]);
+        };
 
-    // Pilihan deposit
-    function selectDeposit(type) {
-      alert("Anda pilih " + type + " deposit.\nSila teruskan dalam bot Telegram untuk langkah seterusnya.");
-      openBot();
-    }
-  </script>
+        const selectNetwork = (fiat) => {
+            addUserMessage(fiat);
+            userState.fiat = fiat;
+            addBotMessage('Select network for deposit:', [
+                { text: 'TRC20 (Tron)', handler: () => promptForAmount('TRC20') },
+                { text: 'ERC20 (Ethereum)', handler: () => promptForAmount('ERC20') }
+            ]);
+        };
+
+        const promptForAmount = (network) => {
+            addUserMessage(network);
+            userState.network = network;
+            const promptHtml = `Enter USDT amount to sell.<br><br><strong>Min:</strong> ${MIN_USDT} / <strong>Max:</strong> ${MAX_USDT}`;
+            addBotMessage(promptHtml);
+            renderInput(`e.g., 100`, 'Next', handleAmountInput, 'number');
+        };
+        
+        const handleAmountInput = (amountStr) => {
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount < MIN_USDT || amount > MAX_USDT) {
+                addBotMessage(`❌ Invalid amount. Must be between ${MIN_USDT} and ${MAX_USDT}.`);
+                renderInput(`e.g., 100`, 'Next', handleAmountInput, 'number');
+                return;
+            }
+            addUserMessage(`${amount} USDT`);
+            userState.amount = amount;
+            const fiatToReceive = calculateFiat(amount, userState.fiat);
+            const confirmationHtml = `You'll get ≈ <strong>${fiatToReceive.toFixed(2)} ${userState.fiat}</strong>.<br><br>Choose payout method:`;
+            
+            addBotMessage(confirmationHtml, [
+                { text: "Wise", handler: () => promptForDetails('wise') }, 
+                { text: "Revolut", handler: () => promptForDetails('revolut') },
+                { text: "PayPal", handler: () => promptForDetails('paypal') }, 
+                { text: "Bank", handler: handleBankTransfer },
+                { text: "Skrill/Neteller", handler: handleSkrillNeteller }, 
+                { text: "Card", handler: () => promptForDetails('card') },
+                { text: "Payeer", handler: () => promptForDetails('payeer') }, 
+                { text: "Alipay", handler: () => promptForDetails('alipay') }
+            ]);
+        };
+        
+        const handleSkrillNeteller = () => {
+            addUserMessage("Skrill/Neteller");
+            addBotMessage("Select service:", [
+                { text: "Skrill", handler: () => promptForDetails('skrill') },
+                { text: "Neteller", handler: () => promptForDetails('neteller') }
+            ]);
+        };
+        
+        const handleBankTransfer = () => {
+            addUserMessage("Bank");
+            addBotMessage("Select bank region:", [
+                { text: "🇪🇺 European", handler: () => promptForDetails('bank_eu') },
+                { text: "🇺🇸 US", handler: () => promptForDetails('bank_us') }
+            ]);
+        };
+
+        const promptForDetails = (method) => {
+            userState.paymentMethod = method;
+            let promptHtml = '';
+            let placeholder = '';
+
+            switch (method) {
+                case 'wise': addUserMessage("Wise"); promptHtml = 'Enter your <strong>Wise email</strong> or <strong>@wisetag</strong>.'; placeholder="email@example.com"; break;
+                case 'revolut': addUserMessage("Revolut"); promptHtml = 'Enter your <strong>Revolut tag</strong> (e.g., @username).'; placeholder="@username"; break;
+                case 'paypal': addUserMessage("PayPal"); promptHtml = 'Enter your <strong>PayPal email</strong>.'; placeholder="email@paypal.com"; break;
+                case 'skrill': addUserMessage("Skrill"); promptHtml = 'Enter your <strong>Skrill email</strong>.'; placeholder="email@skrill.com"; break;
+                case 'neteller': addUserMessage("Neteller"); promptHtml = 'Enter your <strong>Neteller email</strong>.'; placeholder="email@neteller.com"; break;
+                case 'card': addUserMessage("Card"); promptHtml = 'Enter your <strong>Visa/Mastercard number</strong>.'; placeholder="1234..."; break;
+                case 'payeer': addUserMessage("Payeer"); promptHtml = 'Enter your <strong>Payeer Number</strong> (e.g., P12345678).'; placeholder="P12345678"; break;
+                case 'alipay': addUserMessage("Alipay"); promptHtml = 'Enter your <strong>Alipay email</strong>.'; placeholder="email@alipay.com"; break;
+                case 'bank_eu': addUserMessage("European Bank"); promptHtml = 'Enter details:<br><code>Name:\nIBAN:\nSwift:</code>'; placeholder="John Doe\nDE89...\n..."; break;
+                case 'bank_us': addUserMessage("US Bank"); promptHtml = 'Enter details:<br><code>Holder:\nAccount#:\nRouting#:</code>'; placeholder="John Doe\n123456789\n..."; break;
+            }
+            addBotMessage(promptHtml);
+            renderInput(placeholder, 'Submit', (details) => generateDeposit(details));
+        };
+
+        const generateDeposit = async (details) => {
+            addUserMessage("Details submitted.");
+            userState.paymentDetails = details;
+            
+            addBotMessage("⏳ Generating secure deposit address...");
+            inputArea.innerHTML = `<div class="text-center text-sm text-bybit-text-secondary">Processing...</div>`;
+
+            try {
+                // IMPORTANT: In a real deployment, change 'localhost' to your public server address
+                const response = await fetch('http://localhost:3000/api/create-transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userState),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to create transaction.');
+                }
+
+                const result = await response.json();
+                
+                const qr = qrcode(0, 'M');
+                qr.addData(result.address);
+                qr.make();
+                const qrCodeDataUrl = qr.createDataURL(4, 4);
+
+                const depositHtml = `
+                    ✅ <strong>Deposit Address Generated</strong><br><br>
+                    <div class="flex items-center justify-center p-2 bg-white rounded-lg my-2 mx-auto w-36 h-36">
+                        <img src="${qrCodeDataUrl}" alt="QR Code" class="w-full h-full">
+                    </div>
+                    Send exactly <strong>${result.amount} USDT</strong> (${userState.network}) to this address:<br><br>
+                    <div class="bot-bubble p-2.5 rounded-lg text-center font-mono break-all text-xs my-2">
+                        <code>${result.address}</code>
+                    </div>
+                    <a href="${result.status_url}" target="_blank" style="color: var(--bybit-accent);">Click to track transaction status</a><br><br>
+                    <span class="text-bybit-text-secondary">⚠️ Send only ${userState.network} USDT.</span>
+                `;
+
+                addBotMessage(depositHtml, [
+                    { text: '🎉 New Transaction', handler: start }
+                ]);
+
+            } catch (error) {
+                let userFriendlyError = error.message.includes('Failed to fetch') 
+                    ? `<strong>Connection Error:</strong> Could not connect to the backend server. Please ensure it's running.`
+                    : `<strong>An error occurred:</strong> ${error.message}`;
+
+                addBotMessage(`❌ ${userFriendlyError}`, [ { text: '⬅️ Start Over', handler: start } ]);
+            }
+        };
+
+        // Initialize the app
+        tg.ready();
+        start();
+    </script>
 </body>
 </html>
+
