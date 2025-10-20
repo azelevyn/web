@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>USDT to Fiat Exchanger</title>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     body {
@@ -18,7 +18,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       text-align: center;
     }
 
@@ -26,16 +26,16 @@
       background: #1a1a1d;
       border: 1px solid #2c2c30;
       border-radius: 16px;
-      padding: 30px 20px;
+      padding: 25px 20px;
       width: 90%;
       max-width: 420px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
     }
 
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       color: #fff;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     p {
@@ -44,11 +44,13 @@
       font-size: 0.95rem;
     }
 
-    button {
+    .menu button {
+      width: 100%;
       background-color: #f0b90b;
       border: none;
       border-radius: 8px;
-      padding: 12px 20px;
+      padding: 12px;
+      margin: 6px 0;
       font-size: 1rem;
       color: #000;
       font-weight: bold;
@@ -56,7 +58,7 @@
       transition: 0.3s;
     }
 
-    button:hover {
+    .menu button:hover {
       background-color: #ffcd3d;
     }
 
@@ -70,16 +72,86 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    .section {
+      display: none;
+    }
+
+    .back {
+      background-color: #2c2c30;
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    .faq {
+      text-align: left;
+      margin-top: 15px;
+      color: #ccc;
+    }
+
+    .faq h3 {
+      color: #fff;
+      font-size: 1.1rem;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>USDT to Fiat Exchanger</h1>
     <p>Platform rasmi untuk menukar USDT ke MYR / Skrill / Neteller secara selamat.</p>
-    <div id="app-content" style="display:none;">
-      <p>Selamat datang ke <b>Telegram Mini App</b> kami! Sila pilih menu di bawah 👇</p>
-      <button onclick="openBot()">Buka Bot Telegram</button>
+
+    <div id="main-menu" class="menu">
+      <button onclick="showSection('deposit')">💰 Deposit</button>
+      <button onclick="showSection('withdraw')">💸 Withdraw</button>
+      <button onclick="showSection('rate')">📈 Live Rate</button>
+      <button onclick="showSection('faq')">❓ FAQ / Bantuan</button>
     </div>
+
+    <!-- Deposit Section -->
+    <div id="deposit" class="section">
+      <h2>Deposit</h2>
+      <p>Pilih kaedah deposit:</p>
+      <button onclick="selectDeposit('USDT')">USDT (TRC20)</button>
+      <button onclick="selectDeposit('Skrill')">Skrill</button>
+      <button onclick="selectDeposit('Neteller')">Neteller</button>
+      <button class="back" onclick="goBack()">⬅️ Kembali</button>
+    </div>
+
+    <!-- Withdraw Section -->
+    <div id="withdraw" class="section">
+      <h2>Withdraw</h2>
+      <p>Sila masukkan jumlah dan alamat penerimaan melalui bot Telegram.</p>
+      <button onclick="openBot()">🔗 Buka Bot untuk Withdraw</button>
+      <button class="back" onclick="goBack()">⬅️ Kembali</button>
+    </div>
+
+    <!-- Live Rate Section -->
+    <div id="rate" class="section">
+      <h2>Live Rate</h2>
+      <p>💵 1 USDT ≈ <b>RM4.70</b> (kadar semasa contoh)</p>
+      <button class="back" onclick="goBack()">⬅️ Kembali</button>
+    </div>
+
+    <!-- FAQ Section -->
+    <div id="faq" class="section faq">
+      <h2>FAQ / Bantuan</h2>
+      <h3>⚡ Minimum & Maksimum Deposit</h3>
+      <p>Min: 25 | Maks: 50,000 (USDT / MYR / Skrill / Neteller)</p>
+
+      <h3>💱 Bagaimana proses tukaran berlaku?</h3>
+      <p>Setelah deposit dibuat, admin akan semak dan tukar ke akaun pilihan anda secara manual.</p>
+
+      <h3>⏱️ Berapa lama proses?</h3>
+      <p>Biasanya 5 - 15 minit selepas pembayaran disahkan.</p>
+
+      <h3>❌ Nak batalkan transaksi?</h3>
+      <p>Boleh buat permintaan refund melalui bot Telegram.</p>
+
+      <button class="back" onclick="goBack()">⬅️ Kembali</button>
+    </div>
+
+    <!-- Outside Telegram Warning -->
     <div id="outside-content" style="display:none;">
       <p class="warning">⚠️ Sila buka dalam aplikasi Telegram untuk menggunakan Mini App ini.</p>
       <button class="disabled" disabled>Hantar ke Bot</button>
@@ -88,19 +160,36 @@
 
   <script>
     const tg = window.Telegram.WebApp;
-    const appContent = document.getElementById("app-content");
-    const outsideContent = document.getElementById("outside-content");
 
-    // Jika dibuka dalam Telegram
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      tg.expand();
-      appContent.style.display = "block";
+    // Semak jika dalam Telegram
+    if (!(tg.initDataUnsafe && tg.initDataUnsafe.user)) {
+      document.querySelector(".menu").style.display = "none";
+      document.getElementById("outside-content").style.display = "block";
     } else {
-      outsideContent.style.display = "block";
+      tg.expand();
     }
 
+    // Navigasi menu
+    function showSection(id) {
+      document.querySelector(".menu").style.display = "none";
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      document.getElementById(id).style.display = "block";
+    }
+
+    function goBack() {
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      document.querySelector(".menu").style.display = "block";
+    }
+
+    // Buka bot telegram
     function openBot() {
-      window.location.href = "https://t.me/USDT2FIATXBOT";
+      window.location.href = "https://t.me/YOUR_BOT_USERNAME";
+    }
+
+    // Pilihan deposit
+    function selectDeposit(type) {
+      alert("Anda pilih " + type + " deposit.\nSila teruskan dalam bot Telegram untuk langkah seterusnya.");
+      openBot();
     }
   </script>
 </body>
