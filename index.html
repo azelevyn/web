@@ -1,69 +1,64 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Telegram Mini App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: #f5f6fa;
-      color: #2f3640;
-      text-align: center;
-    }
-    h1 { margin-bottom: 0.3em; }
-    button {
-      background: #0088cc;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sell USDT</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <h1>My Telegram Mini App</h1>
-  <p id="user-info">Memuatkan maklumat pengguna…</p>
-  <button id="send-data">Hantar ke Bot</button>
+  <div class="container">
+    <header>
+      <h1>💸 Sell USDT</h1>
+      <p class="subtitle">Fast, secure, and reliable exchange</p>
+    </header>
 
-  <script>
-    const tg = window.Telegram && window.Telegram.WebApp;
-    const info = document.getElementById('user-info');
-    const sendBtn = document.getElementById('send-data');
+    <div class="card">
+      <h3>Current Rates</h3>
+      <ul>
+        <li>USD → EUR = <b>0.89 EUR</b></li>
+        <li>USDT → GBP = <b>0.77 GBP</b></li>
+        <li>USD → USDT = <b>1.08</b></li>
+      </ul>
+    </div>
 
-    if (tg) {
-      tg.expand(); // gunakan seluruh skrin
-      const user = tg.initDataUnsafe?.user;
-      if (user) {
-        info.textContent = `👋 Hai ${user.first_name || 'pengguna'}!`;
-      } else {
-        info.textContent = 'Selamat datang ke Mini App ini!';
-      }
+    <div class="card">
+      <h3>Select Fiat Currency</h3>
+      <select id="currency">
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+      </select>
+    </div>
 
-      sendBtn.addEventListener('click', () => {
-        tg.sendData(JSON.stringify({
-          action: 'confirm',
-          message: 'User clicked the confirm button',
-          time: Date.now()
-        }));
-      });
-    } else {
-      info.textContent = '⚠️ Sila buka dalam Telegram untuk guna Mini App.';
-      sendBtn.disabled = true;
-    }
-  </script>
+    <div class="card">
+      <h3>Select Network</h3>
+      <select id="network">
+        <option value="TRC20">USDT TRC20</option>
+        <option value="ERC20">USDT ERC20</option>
+        <option value="BEP20">USDT BEP20</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h3>Payment Method</h3>
+      <select id="method">
+        <option value="wise">Wise</option>
+        <option value="revolut">Revolut</option>
+        <option value="paypal">PayPal</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="skrill">Skrill</option>
+        <option value="neteller">Neteller</option>
+        <option value="card">Card</option>
+        <option value="payeer">Payeer</option>
+        <option value="alipay">Alipay</option>
+      </select>
+    </div>
+
+    <button id="submitBtn">Proceed</button>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
