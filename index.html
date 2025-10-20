@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Telegram Mini App</title>
+</head>
+<body>
+  <h1>Telegram Mini App — Contoh Ringkas</h1>
+  <p id="greet">Memuatkan…</p>
+  <button id="send-data">Kirim ke Bot</button>
+
+  <script>
+    // Pastikan Telegram Web Apps SDK tersedia ketika dimuat di dalam Telegram
+    // Telegram menyediakan objek window.Telegram.WebApp
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const greet = document.getElementById('greet');
+
+    if (tg) {
+      // tampilkan nama pengguna jika ada
+      const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      greet.innerText = user ? `Hello, ${user.first_name || 'user'}` : 'Hello!';
+      // contoh: kirim message ke bot (memanggil back via WebApp.sendData)
+      document.getElementById('send-data').addEventListener('click', () => {
+        // data dikirim sebagai string ke bot webhook
+        tg.sendData(JSON.stringify({ action: 'clicked', time: Date.now() }));
+      });
+    } else {
+      greet.innerText = 'This page must be opened inside Telegram (as a Mini App).';
+      document.getElementById('send-data').disabled = true;
+    }
+  </script>
+</body>
+</html>
