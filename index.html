@@ -1,33 +1,68 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>My Telegram Mini App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f5f6fa;
+      color: #2f3640;
+      text-align: center;
+    }
+    h1 { margin-bottom: 0.3em; }
+    button {
+      background: #0088cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
-  <h1>Telegram Mini App — Contoh Ringkas</h1>
-  <p id="greet">Memuatkan…</p>
-  <button id="send-data">Kirim ke Bot</button>
+  <h1>My Telegram Mini App</h1>
+  <p id="user-info">Memuatkan maklumat pengguna…</p>
+  <button id="send-data">Hantar ke Bot</button>
 
   <script>
-    // Pastikan Telegram Web Apps SDK tersedia ketika dimuat di dalam Telegram
-    // Telegram menyediakan objek window.Telegram.WebApp
     const tg = window.Telegram && window.Telegram.WebApp;
-    const greet = document.getElementById('greet');
+    const info = document.getElementById('user-info');
+    const sendBtn = document.getElementById('send-data');
 
     if (tg) {
-      // tampilkan nama pengguna jika ada
-      const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      greet.innerText = user ? `Hello, ${user.first_name || 'user'}` : 'Hello!';
-      // contoh: kirim message ke bot (memanggil back via WebApp.sendData)
-      document.getElementById('send-data').addEventListener('click', () => {
-        // data dikirim sebagai string ke bot webhook
-        tg.sendData(JSON.stringify({ action: 'clicked', time: Date.now() }));
+      tg.expand(); // gunakan seluruh skrin
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        info.textContent = `👋 Hai ${user.first_name || 'pengguna'}!`;
+      } else {
+        info.textContent = 'Selamat datang ke Mini App ini!';
+      }
+
+      sendBtn.addEventListener('click', () => {
+        tg.sendData(JSON.stringify({
+          action: 'confirm',
+          message: 'User clicked the confirm button',
+          time: Date.now()
+        }));
       });
     } else {
-      greet.innerText = 'This page must be opened inside Telegram (as a Mini App).';
-      document.getElementById('send-data').disabled = true;
+      info.textContent = '⚠️ Sila buka dalam Telegram untuk guna Mini App.';
+      sendBtn.disabled = true;
     }
   </script>
 </body>
