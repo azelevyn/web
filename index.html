@@ -1,64 +1,335 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sell USDT</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sell USDT — Mini App</title>
+<meta name="description" content="Compact Bybit-style Mini App to sell USDT" />
+<!-- Telegram Web App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#0b0d10; --card:#121318; --muted:#9aa4b2; --accent:#f5c000; --white:#e8eef6;
+    --glass: rgba(255,255,255,0.03);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:var(--bg); color:var(--white); -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  .wrap{max-width:420px;margin:18px auto;padding:18px;}
+  header{display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#1f2937,#111318);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)}
+  h1{font-size:18px;margin:0}
+  .subtitle{color:var(--muted);font-size:12px;margin-top:4px}
+  .card{background:var(--card);border-radius:var(--radius);padding:14px;margin-top:14px;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
+  .small{font-size:13px;color:var(--muted)}
+  label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+  select,input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--white);outline:none}
+  select:focus,input:focus,textarea:focus{box-shadow:0 0 0 3px rgba(245,192,0,0.08)}
+  .row{display:flex;gap:10px}
+  .col{flex:1}
+  .rates{display:flex;gap:8px;flex-wrap:wrap}
+  .rate-pill{background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;font-size:13px;color:var(--white)}
+  .btn{display:inline-block;width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#000;font-weight:700;cursor:pointer;margin-top:10px}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
+  .muted{color:var(--muted);font-size:13px}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+  .hidden{display:none}
+  .summary{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:10px;border-radius:8px;margin-top:10px}
+  footer{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+  .flex-between{display:flex;justify-content:space-between;align-items:center}
+  .link{color:var(--accent);cursor:pointer}
+  .error{color:#ff6b6b;font-size:13px;margin-top:8px}
+</style>
 </head>
 <body>
-  <div class="container">
+  <div class="wrap">
     <header>
-      <h1>💸 Sell USDT</h1>
-      <p class="subtitle">Fast, secure, and reliable exchange</p>
+      <div class="logo">US</div>
+      <div>
+        <h1>Sell USDT</h1>
+        <div class="subtitle">Fast, secure payout — TRC20 / BEP20 / ERC20</div>
+      </div>
     </header>
 
     <div class="card">
-      <h3>Current Rates</h3>
-      <ul>
-        <li>USD → EUR = <b>0.89 EUR</b></li>
-        <li>USDT → GBP = <b>0.77 GBP</b></li>
-        <li>USD → USDT = <b>1.08</b></li>
-      </ul>
-    </div>
+      <div class="flex-between">
+        <div><strong>Rates</strong><div class="small">Fixed for this session</div></div>
+        <div class="small muted">Refund email: <strong>azelchillexa@gmail.com</strong></div>
+      </div>
+      <div style="margin-top:10px" class="rates" aria-hidden="true">
+        <div class="rate-pill">USD → EUR: <strong>0.89</strong></div>
+        <div class="rate-pill">USDT → GBP: <strong>0.77</strong></div>
+        <div class="rate-pill">USD → USDT: <strong>1.08</strong></div>
+      </div>
 
-    <div class="card">
-      <h3>Select Fiat Currency</h3>
-      <select id="currency">
+      <hr style="border:none;height:10px;background:transparent"/>
+
+      <label for="fiat">Receive fiat</label>
+      <select id="fiat" aria-label="Choose fiat">
         <option value="USD">USD</option>
         <option value="EUR">EUR</option>
         <option value="GBP">GBP</option>
       </select>
+
+      <div style="margin-top:10px">
+        <label for="network">Deposit network</label>
+        <select id="network" aria-label="Choose network">
+          <option value="TRC20">USDT TRC20</option>
+          <option value="BEP20">USDT BEP20</option>
+          <option value="ERC20">USDT ERC20</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px">
+        <label for="method">Payment method</label>
+        <select id="method" aria-label="Choose payment method">
+          <option value="wise">Wise</option>
+          <option value="revolut">Revolut</option>
+          <option value="paypal">PayPal</option>
+          <option value="bank">Bank Transfer</option>
+          <option value="skrill_neteller">Skrill / Neteller</option>
+          <option value="card">Visa / Mastercard</option>
+          <option value="payeer">Payeer</option>
+          <option value="alipay">Alipay</option>
+        </select>
+      </div>
+
+      <!-- Skrill / Neteller submenu -->
+      <div id="skrillChoice" class="hidden" style="margin-top:10px">
+        <label>Choose</label>
+        <div class="row">
+          <button id="chooseSkrill" class="btn secondary" style="flex:1">Skrill</button>
+          <button id="chooseNeteller" class="btn secondary" style="flex:1">Neteller</button>
+        </div>
+      </div>
+
+      <!-- dynamic input area -->
+      <div id="detailsArea" style="margin-top:12px">
+        <label id="detailsLabel">Payment details</label>
+        <input id="detailsInput" placeholder="e.g. email@example.com or @tag" />
+        <div id="bankSample" class="muted hint hidden">Format: Full Name, IBAN, SWIFT</div>
+      </div>
+
+      <div style="margin-top:10px" class="row">
+        <div class="col">
+          <label for="amount">Amount (USDT)</label>
+          <input id="amount" inputmode="decimal" placeholder="e.g. 100" />
+        </div>
+        <div style="width:110px" class="col">
+          <label>&nbsp;</label>
+          <button id="calcBtn" class="btn secondary">Estimate</button>
+        </div>
+      </div>
+
+      <div id="error" class="error hidden"></div>
+
+      <div id="summary" class="summary hidden" aria-live="polite"></div>
+
+      <button id="sendBtn" class="btn" style="margin-top:12px">Send to Telegram</button>
+
+      <div class="hint">Min: <strong>25</strong> — Max: <strong>50,000</strong> USDT</div>
     </div>
 
-    <div class="card">
-      <h3>Select Network</h3>
-      <select id="network">
-        <option value="TRC20">USDT TRC20</option>
-        <option value="ERC20">USDT ERC20</option>
-        <option value="BEP20">USDT BEP20</option>
-      </select>
+    <div class="card" style="margin-top:12px">
+      <div class="flex-between"><strong>Help / FAQ</strong><span class="muted small">Tap to expand</span></div>
+      <div id="faq" class="muted" style="margin-top:10px;font-size:13px;line-height:1.4">
+        • Choose fiat currency you want to receive (USD/EUR/GBP).<br>
+        • Choose network and payment method. If Skrill/Neteller, choose which one.<br>
+        • Enter amount (25–50,000). Click *Estimate* to preview USDT required. Then *Send to Telegram*.<br>
+        • The bot will return a deposit address (CoinPayments) and process payout after confirmations.
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Payment Method</h3>
-      <select id="method">
-        <option value="wise">Wise</option>
-        <option value="revolut">Revolut</option>
-        <option value="paypal">PayPal</option>
-        <option value="bank">Bank Transfer</option>
-        <option value="skrill">Skrill</option>
-        <option value="neteller">Neteller</option>
-        <option value="card">Card</option>
-        <option value="payeer">Payeer</option>
-        <option value="alipay">Alipay</option>
-      </select>
-    </div>
-
-    <button id="submitBtn">Proceed</button>
+    <footer>
+      Compact Bybit-style • Built for Telegram Web App
+    </footer>
   </div>
 
-  <script src="script.js"></script>
+<script>
+(function(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    try { tg.expand(); } catch(e){/*ignore*/ }
+  }
+
+  // Elements
+  const methodEl = document.getElementById('method');
+  const skrillChoice = document.getElementById('skrillChoice');
+  const chooseSkrill = document.getElementById('chooseSkrill');
+  const chooseNeteller = document.getElementById('chooseNeteller');
+  const detailsLabel = document.getElementById('detailsLabel');
+  const detailsInput = document.getElementById('detailsInput');
+  const bankSample = document.getElementById('bankSample');
+  const amountInput = document.getElementById('amount');
+  const calcBtn = document.getElementById('calcBtn');
+  const sendBtn = document.getElementById('sendBtn');
+  const summary = document.getElementById('summary');
+  const errorEl = document.getElementById('error');
+
+  // Rates (fixed)
+  const R = { USD_TO_EUR:0.89, USD_TO_USDT:1.08, USDT_TO_GBP:0.77 };
+
+  function resetError(){ errorEl.classList.add('hidden'); errorEl.textContent=''; }
+  function showError(msg){ errorEl.classList.remove('hidden'); errorEl.textContent = msg; }
+
+  function showSkrillChoice(show){
+    skrillChoice.classList.toggle('hidden', !show);
+  }
+
+  function setDetailsPlaceholderFor(method){
+    bankSample.classList.add('hidden');
+    detailsInput.value = '';
+    switch(method){
+      case 'wise':
+        detailsLabel.textContent = 'Wise email or tag';
+        detailsInput.placeholder = 'email@example.com or @username';
+        break;
+      case 'revolut':
+        detailsLabel.textContent = 'Revolut tag';
+        detailsInput.placeholder = '@revtag';
+        break;
+      case 'paypal':
+        detailsLabel.textContent = 'PayPal email';
+        detailsInput.placeholder = 'email@example.com';
+        break;
+      case 'bank':
+        detailsLabel.textContent = 'Bank details';
+        detailsInput.placeholder = 'Full Name, IBAN, SWIFT';
+        bankSample.classList.remove('hidden');
+        break;
+      case 'skrill':
+        detailsLabel.textContent = 'Skrill email';
+        detailsInput.placeholder = 'email@example.com';
+        break;
+      case 'neteller':
+        detailsLabel.textContent = 'Neteller email';
+        detailsInput.placeholder = 'email@example.com';
+        break;
+      case 'card':
+        detailsLabel.textContent = 'Card number';
+        detailsInput.placeholder = '4111111111111111';
+        break;
+      case 'payeer':
+        detailsLabel.textContent = 'Payeer number';
+        detailsInput.placeholder = 'P1234567';
+        break;
+      case 'alipay':
+        detailsLabel.textContent = 'Alipay email';
+        detailsInput.placeholder = 'email@example.com';
+        break;
+      default:
+        detailsLabel.textContent = 'Payment details';
+        detailsInput.placeholder = 'Enter details';
+    }
+  }
+
+  // Payment method change
+  methodEl.addEventListener('change', (e)=>{
+    const v = e.target.value;
+    resetError();
+    if (v === 'skrill_neteller'){
+      showSkrillChoice(true);
+      setDetailsPlaceholderFor('skrill'); // default
+    } else {
+      showSkrillChoice(false);
+      setDetailsPlaceholderFor(v);
+    }
+  });
+
+  chooseSkrill.addEventListener('click', ()=>{ setDetailsPlaceholderFor('skrill'); showSkrillChoice(false); methodEl.value='skrill'; });
+  chooseNeteller.addEventListener('click', ()=>{ setDetailsPlaceholderFor('neteller'); showSkrillChoice(false); methodEl.value='neteller'; });
+
+  // Estimate calculation (basic demo conversion)
+  function fiatToUsd(amount, fiat){
+    fiat = fiat.toUpperCase();
+    if (fiat === 'USD') return amount;
+    if (fiat === 'EUR') return amount / R.USD_TO_EUR;
+    if (fiat === 'GBP') {
+      // approximate: 1 USD = 1.08 USDT = 1.08*0.77 GBP = 0.8316 GBP => 1 GBP = 1/0.8316 USD
+      const usdPerGbp = 1 / (R.USD_TO_USDT * R.USDT_TO_GBP);
+      return amount * usdPerGbp;
+    }
+    return amount;
+  }
+  function usdToUsdt(usd){ return usd * R.USD_TO_USDT; }
+
+  calcBtn.addEventListener('click', ()=>{
+    resetError(); summary.classList.add('hidden');
+    const amountStr = amountInput.value.trim();
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount)) { showError('Enter a numeric amount'); return; }
+    if (amount < 25 || amount > 50000){ showError('Amount must be between 25 and 50000 USDT'); return; }
+    const fiat = document.getElementById('fiat').value;
+    // Assume user wants to RECEIVE fiat amount equal to "amount" input?  
+    // Our flow interprets amount as USDT the user will send — show both conversions:
+    const usdEquivalent = fiatToUsd(amount, fiat); // interpret amount as fiat? ambiguous; we'll show both.
+    const usdtEstimate = usdToUsdt(usdEquivalent);
+    summary.innerHTML = `<strong>Summary</strong>
+      <div class="muted" style="margin-top:6px">
+        Payment method: <strong>${methodEl.value}</strong><br>
+        Network: <strong>${document.getElementById('network').value}</strong><br>
+        Fiat chosen: <strong>${fiat}</strong><br>
+        Amount (entered): <strong>${amount}</strong> USDT<br>
+        Estimated USD-equivalent: <strong>${Number(usdEquivalent.toFixed(6))}</strong><br>
+        Estimated USDT (calc): <strong>${Number(usdtEstimate.toFixed(6))} USDT</strong>
+      </div>`;
+    summary.classList.remove('hidden');
+  });
+
+  // Send to Telegram (or fallback to copy)
+  sendBtn.addEventListener('click', ()=>{
+    resetError();
+    const method = methodEl.value;
+    const details = detailsInput.value.trim();
+    const amountStr = amountInput.value.trim();
+    const amount = parseFloat(amountStr);
+    const fiat = document.getElementById('fiat').value;
+    const network = document.getElementById('network').value;
+
+    if (!details){ showError('Please enter your payment details'); return; }
+    if (isNaN(amount) || amount < 25 || amount > 50000){ showError('Enter valid amount between 25 and 50000'); return; }
+
+    const payload = {
+      action: 'sell_usdt',
+      fiat,
+      network,
+      payment_method: method,
+      payment_details: details,
+      amount: Number(amount.toFixed(6)),
+      timestamp: Date.now()
+    };
+
+    if (tg && tg.sendData){
+      try {
+        tg.sendData(JSON.stringify(payload));
+        // Optionally show native confirmation
+        if (tg.MainButton) tg.MainButton.setText('Sent');
+        alert('Data sent to Telegram bot. You can close this window.');
+      } catch(err){
+        console.error(err);
+        showError('Failed to send to Telegram. Please copy the data manually.');
+      }
+    } else {
+      // fallback: copy payload to clipboard and show
+      const json = JSON.stringify(payload, null, 2);
+      navigator.clipboard?.writeText(json).then(()=>{
+        alert('WebApp not opened from Telegram. Data copied to clipboard:\n\n' + json);
+      }).catch(()=>{
+        // create temporary textarea
+        const ta = document.createElement('textarea'); ta.value = json; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        alert('Data copied to clipboard (fallback). Paste it to your bot/admin.');
+      });
+    }
+  });
+
+  // Initialize UI defaults
+  setDetailsPlaceholderFor(methodEl.value);
+})();
+</script>
 </body>
 </html>
